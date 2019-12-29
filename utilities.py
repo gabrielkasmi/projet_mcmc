@@ -75,7 +75,7 @@ def plot_realisation(result, t, kwargs_plt_1, kwargs_plt_2, kwargs_plt_3, size):
 
 
 # Discretisation des données
-def generate_noisy_prevalence(I_t, sigma_y, bin_size, t):
+def generate_noisy_incidence(I_t, sigma_y, bin_size, t):
     """
     Pour un vecteur donné correspondant au nombre de
     personnes infectées, génère des observations
@@ -139,3 +139,91 @@ def generate_noisy_prevalence(I_t, sigma_y, bin_size, t):
             continue
 
     return noisy_values, indices
+
+
+# Pour la prévalence
+def generate_noisy_prevalence(E_t, R_t, sigma_y, bin_size, t):
+    """
+    Pour un vecteur donné correspondant au nombre de
+    personnes infectées, génère des observations
+    bruitées tirées selon une Gaussienne
+
+    Les observations sont faites en temps discret
+    donc les observations sont discrétisées avec
+    un pas semaine, et on prend une des valeurs
+    tirées au hasard parmi l'ensemble des valeurs
+    tombant dans la boite en question.
+
+    Arguments:
+    - E_t : vecteur d'incidence
+    - V_t : vecteur de cas soignés
+    - sigma_y : le bruit (entré comme std dev)
+    - bin_size : longueur de la boite (en semaines)
+    - t : le vecteur de temps passé en input
+    """
+
+    # Déduire le nombre de boites à partir de la longueur
+    # du vecteur d'entrée et de la taille des boites souhaitée
+    nb_days = int(np.max(t))
+    nb_bins = math.floor(nb_days/bin_size) + 1
+
+    # Initialisation du vecteur d'observations bruitées
+    # Sous forme de liste, car si on n'a une boite vide,
+    # on ne voudra pas l'utiliser. Permet de couvrir tout l'intervalle
+    # avec éventuellement une taille de boite "non standard".
+
+    # La prévalence initale correspond à la différence des conditions initiales.
+    prevalence = max(0, E_t[0] - R_t[0])
+
+    # Découpage du vecteur continu
+    # Vecteur des longueurs cumulées, pour "avancer" dans les indices de I_t.
+    length_sequences = 0
+    indices = []
+    prevalence_profile = [prevalence]
+
+    for i in range(nb_bins):
+
+        # Définition la condition
+        condition = [i * bin_size <= s < (i+1) * bin_size for s in t]
+        # Extraire le sous vecteur qui satisfait la condition
+        current_bin = np.extract(condition, t)
+
+        # Dans chacune des boites, prendre une valeur de temps au hasard
+        # Seulement pour les boites qui ont plus de une observation
+        # sinon considérées comme vides
+        if len(current_bin) > 0:
+
+            # On sélectionn un indice au hasard
+            index_pick = random.randrange(length_sequences, len(current_bin) + length_sequences)
+            indices.append(index_pick)
+            length_sequences += len(current_bin)
+            # Aller chercher cette valeur dans les vecteurs
+            baseline_E_t = E_t[index_pick]
+            baseline_R_t = R_t[index_pick]
+
+
+
+            # Bruiter l'observation
+            E_t_noisy = float(norm.rvs(loc=baseline_E_t, scale=sigma_y, size=1, random_state=None))
+            R_t_noisy = float(norm.rvs(loc=baseline_R_t, scale=sigma_y, size=1, random_state=None))
+
+            # On corrige les valeurs négatives.
+            R_t_noisy = max(0,R_t_noisy)
+            E_t_noisy = max(0,E_t_noisy)
+
+            # Calculer la prévalence
+            prevalence += E_t_noisy - R_t_noisy
+            prevalence = max(0, prevalence)
+
+            # Ajouter la nouvelle valeur courante
+            #prevalence_profile.append(prevalence)
+            #print(prevalence_profile)
+            prevalence_profile.append(prevalence)
+
+
+        else:
+            continue
+        # Raccourcir la chaine (enlever la dernière observation)
+    prevalence_profile.pop()
+
+    return prevalence_profile, indices
