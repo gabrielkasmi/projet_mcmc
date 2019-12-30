@@ -19,7 +19,7 @@ class SEIR_ODE:
         self.X = X  # X trajectories
 
     def beta(self, t):
-        beta = np.exp[self.X]
+        beta = np.exp[self.X[int(t)]]
         return
 
     def prevalence_solve(self, t):
