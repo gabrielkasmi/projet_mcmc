@@ -12,7 +12,7 @@ class SEIR_ODE:
     def __init__(self, X, coefs=[0.3, 0.2], init=[0.9, 0., 0.1, 0.]):
         self.coefs = coefs  # coefs k and gamma in the article
         self.init = init  # inital SEIR conditions
-        self.X = X  # X trajectories
+        self.X = X  # X trajectories (log_beta)
 
     def beta(self, t):
         res = np.exp(self.X[int(t)])
