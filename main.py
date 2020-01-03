@@ -50,11 +50,12 @@ Creation and simulation of state space model
 # my_ssm = SEIR()  # use default values for all parameters
 # x, y = my_ssm.simulate(100)  # simulate Xt and Yt
 
-data = pd.read_csv("generative_prevalence.csv")
+data = pd.read_csv("data_with_beta.csv")
 y=np.array(data['incidence'])
+x=np.array(data['true_beta'])
 
 plt.style.use('ggplot')
-plt.plot(y)
+plt.plot(x)
 plt.xlabel('t')
 plt.ylabel('data')
 plt.show()
@@ -66,7 +67,7 @@ PMMH run
 prior_dict = {'sigma': dists.Gamma(1, 1), 'tau': dists.Gamma(1, 1)}
 prior = dists.StructDist(prior_dict)  # priors of parameters sigma and tau
 
-my_alg = my_PMMH(ssm_cls=SEIR_hard, smc_cls=my_SMC, fk_cls=my_Bootstrap, niter=30, data=y, Nx=15, prior=prior)  # instantiate PMMH algorithm
+my_alg = my_PMMH(ssm_cls=SEIR_hard, smc_cls=my_SMC, fk_cls=my_Bootstrap, niter=10, data=y, Nx=50, prior=prior)  # instantiate PMMH algorithm
 
 my_alg.run()  # run all iterations
 

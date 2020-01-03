@@ -11,6 +11,7 @@ import scipy
 from particles import state_space_models as ssm
 from particles import distributions as dists
 
+
 class SEIR_ODE:
 
     def __init__(self, X, coefs=[0.3, 0.2], init=[0.9, 0., 0.1, 0.]):
@@ -19,17 +20,18 @@ class SEIR_ODE:
         self.X = X  # X trajectories
 
     def beta(self, t):
-        beta = np.exp[self.X[int(t)]]
-        return
+        res = np.exp(self.X[int(t)])
+        return res
 
     def prevalence_solve(self, t):
-        t_grid = np.linspace(0, t, 1)
+        t_grid = np.arange(max(len(self.X) - 1, 1))
         solution = np.array(scipy.integrate.odeint(self.simulate_SEIR_model, self.init, t_grid,
-                                          args=(self.beta, *self.coefs)))  # solve full ODE
+                                                   args=(self.beta,)))  # solve full ODE
         prevalence = solution[-1, 2]  # get last E
         return prevalence
 
-    def simulate_SEIR_model(y, t, beta, gamma, sigma):
+    def simulate_SEIR_model(self, y, t, beta):
+        sigma, gamma = self.coefs[0], self.coefs[1]
         S, E, I, R = y
         N = S + E + I + R
 
@@ -43,7 +45,6 @@ class SEIR_ODE:
 
 
 class SEIR_hard(ssm.StateSpaceModel):
-
     default_params = {'sigma': 1, 'tau': 1}
 
     def PX0(self):  # Distribution of X_0
@@ -68,7 +69,6 @@ class SEIR_hard(ssm.StateSpaceModel):
 
 
 class SEIR(ssm.StateSpaceModel):
-
     default_params = {'sigma': 1, 'tau': 1}
 
     def PX0(self):  # Distribution of X_0

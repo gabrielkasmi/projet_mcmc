@@ -157,6 +157,7 @@ class my_SMC(SMC):
             self.X = self.fk.M0(self.N)
 
     def reweight_particles(self):
+        # print(self.t, np.shape(self.hist.X))
         self.wgts = self.wgts.add(self.fk.logG(self.t, self.N, self.hist.X))
 
     def resample_move(self):
