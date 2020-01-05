@@ -5,30 +5,35 @@ Personal state space models
 # the usual imports
 import numpy as np
 import pandas as pd
-import scipy
 
 # imports from the package
 from particles import state_space_models as ssm
 from particles import distributions as dists
+from scipy.integrate import odeint
 
 
 class SEIR_ODE:
 
-    def __init__(self, X, coefs=[0.3, 0.2], init=[0.9, 0., 0.1, 0.]):
+    def __init__(self, X, coefs=[0.2, 0.01], init=[0.7, 0., 0.3, 0.]):
         self.coefs = coefs  # coefs k and gamma in the article
         self.init = init  # inital SEIR conditions
-        self.X = X  # X trajectories
+        self.X = X  # X trajectories (log_beta)
 
     def beta(self, t):
-        res = np.exp(self.X[int(t)])
+        res = np.exp(np.interp(np.array([t]), np.arange(len(self.X)), self.X))[0]
         return res
 
-    def prevalence_solve(self, t):
+    def prevalence_solve(self):
         t_grid = np.arange(max(len(self.X) - 1, 1))
-        solution = np.array(scipy.integrate.odeint(self.simulate_SEIR_model, self.init, t_grid,
+        solution = np.array(odeint(self.simulate_SEIR_model, self.init, t_grid,
                                                    args=(self.beta,)))  # solve full ODE
-        prevalence = solution[-1, 2]  # get last E
-        return prevalence
+        return solution[-1, 1]
+
+    def prevalence(self, solution):
+        """Retourne la prévalence au dernier temps t en fonction de la solution à l'ODE
+        calculée juste au dessus
+        """
+        return None
 
     def simulate_SEIR_model(self, y, t, beta):
         sigma, gamma = self.coefs[0], self.coefs[1]
@@ -56,29 +61,16 @@ class SEIR_hard(ssm.StateSpaceModel):
     def prevalence(self, t, N, trajectory):
         prev_vect = np.ones((N,))
         if trajectory == []:
-            prev_vect *= SEIR_ODE(None).init[2]
+            prev_vect *= SEIR_ODE(None).init[1]
         else:
             for particle_index in range(N):
                 ODE = SEIR_ODE([particles[particle_index] for particles in trajectory])
-                solution = ODE.prevalence_solve(t)
+                solution = ODE.prevalence_solve()
                 prev_vect[particle_index] = solution
         return prev_vect
 
     def PY(self, t, N, trajectory):  # Distribution of Y_t given X_t=x, and X_{t-1}=xp
         return dists.Normal(loc=self.prevalence(t, N, trajectory), scale=self.tau)
-
-
-class SEIR(ssm.StateSpaceModel):
-    default_params = {'sigma': 1, 'tau': 1}
-
-    def PX0(self):  # Distribution of X_0
-        return dists.Normal()
-
-    def PX(self, t, xp):  # Distribution of X_t given X_{t-1} = xp (p=past)
-        return dists.Normal(loc=xp, scale=self.sigma)
-
-    def PY(self, t, xp, x):  # Distribution of Y_t given X_t=x, and X_{t-1}=xp
-        return dists.Normal(loc=x, scale=self.tau)
 
 
 class my_Bootstrap(ssm.Bootstrap):
