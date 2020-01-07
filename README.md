@@ -17,6 +17,7 @@ sont enregistées dans le fichier 'data_with_beta.csv' qui est écrasé à chaqu
 log beta associé.
 - ```main.py``` permet d'exécuter l'algorithme de pMCMC pour le modèle SEIR et d'afficher
 les résultats.
+- ```raw_data.csv``` contient les données utilisées dans l'article.
 
 Les autres fichiers sont des ressources utiles ou des classes utilisées par les fichiers 
 principaux. Pour plus d'informations sur ces dernières, se référer directement à la 
