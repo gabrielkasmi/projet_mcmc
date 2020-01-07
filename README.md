@@ -2,6 +2,8 @@
 
 Pour une description plus détaillée du modèle SEIR, voir ce [github](https://institutefordiseasemodeling.github.io/Documentation/general/model-seir.html). 
 
+Cette implémentation est fondée sur l'article ```MainDocument.pdf```.
+
 ### Prérequis
 
 Cette implémentation du pMCMC pour l'estimation de l'effective contact rate
