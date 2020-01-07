@@ -24,6 +24,17 @@ documentation dans le code.
 
 ### Génération des données
 
-Pour simuler les données, exécuter le notebook donnees_simulees. 
+Pour simuler les données, exécuter le notebook ```donnees_simulees.ipynb```. 
 
 ### Exécution de l'algorithme pMCMC
+
+Il suffit d'exécuter le script ```main.py```.
+
+Pour changer le nombre de particules ou le nombre d'itérations, il suffit de modifier 
+respectivement dans  le fichier ```main.py``` les valeurs des variables ```N_PART``` 
+et ```N_ITER```.
+
+Pour changer les valeurs des coefficients ou les valeurs initiales du système d'équations
+différentielles, il suffit de modifier respectivement les valeurs par défaut de ```coefs``` et de ```init```
+dans le fichier ```my_state_space_models.py```.
+
