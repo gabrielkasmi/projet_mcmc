@@ -5,10 +5,10 @@ and eventually, run full algorithm.
 
 import particles
 import numpy as np
+from scipy import stats
 from particles.mcmc import PMMH, GenericRWHM
 from particles.smc_samplers import Bootstrap
 from particles import smc_samplers as ssp
-from scipy import stats
 
 
 class my_PMMH(PMMH):
@@ -41,7 +41,7 @@ class my_PMMH(PMMH):
         lp_acc = self.prop.lpost[0] - self.chain.lpost[n - 1]
         if np.log(stats.uniform.rvs()) < lp_acc:  # accept
             self.chain.copyto_at(n, self.prop, 0)
-            self.history = self.prop_history  # store particles
+            self.history = self.prop_history  # store particles history
             self.nacc += 1
         else:  # reject
             self.chain.copyto_at(n, self.chain, n - 1)

@@ -19,7 +19,7 @@ class my_SMC(SMC):
         Pass down entire X history and number of particles instead of x and xp
         :return: None
         """
-        self.wgts = self.wgts.add(self.fk.logG(self.t, self.N, self.hist.X))
+        self.wgts = self.wgts.add(self.fk.logG(self.t, self.N, self.hist.X))  # pass down full history of X
 
 
 

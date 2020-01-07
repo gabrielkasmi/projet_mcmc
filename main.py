@@ -79,8 +79,8 @@ if __name__ == '__main__':
                   'tau': dists.Gamma(1, 1)}  # prior distributions of parameters sigma and tau
     prior = dists.StructDist(prior_dict)  # priors of parameters sigma and tau
 
-    my_alg = my_PMMH(ssm_cls=SEIR, smc_cls=my_SMC, fk_cls=my_Bootstrap, niter=100, data=y, Nx=100,
-                     prior=prior, verbose=100)  # instantiate PMMH algorithm
+    my_alg = my_PMMH(ssm_cls=SEIR, smc_cls=my_SMC, fk_cls=my_Bootstrap, niter=10, data=y, Nx=50,
+                     prior=prior, verbose=10)  # instantiate PMMH algorithm
 
     my_alg.run()  # run all iterations
 
@@ -96,6 +96,7 @@ if __name__ == '__main__':
         sb.lineplot(x='t', y='X', data=results)  # plot results
         plt.xlabel('t in weeks')
         plt.ylabel('Approximated X = log(beta)')
+        plt.title('Evolution of approximated X')
         plt.show()
 
         # plot approximated SEIR
@@ -108,6 +109,7 @@ if __name__ == '__main__':
         for i, res in enumerate(full_seir):
             ax = sb.lineplot(x='t', y='X', data=flatten(res), label=LABELS[i])
             plt.plot()
+        plt.title('Approximated evolution of SEIR')
         plt.show()
 
 
