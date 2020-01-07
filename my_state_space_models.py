@@ -4,7 +4,6 @@ Personal state space models
 
 # the usual imports
 import numpy as np
-import pandas as pd
 
 # imports from the package
 from particles import state_space_models as ssm
@@ -14,28 +13,43 @@ from scipy.integrate import odeint
 
 class SEIR_ODE:
 
-    def __init__(self, X, coefs=[0.2, 0.01], init=[0.7, 0., 0.3, 0.]):
+    def __init__(self, X, coefs=[0.1, 0.1], init=[0.7, 0., 0.3, 0.]):
         self.coefs = coefs  # coefs k and gamma in the article
         self.init = init  # inital SEIR conditions
         self.X = X  # X trajectories (log_beta)
 
     def beta(self, t):
-        res = np.exp(np.interp(np.array([t]), np.arange(len(self.X)), self.X))[0]
+        """
+        Gives interpolated beta at time t given particles X
+        :param t: 
+        :return: 
+        """
+        res = np.interp(np.array([t]), np.arange(len(self.X)), np.exp(self.X))[0]
         return res
 
-    def prevalence_solve(self):
-        t_grid = np.arange(max(len(self.X) - 1, 1))
-        solution = np.array(odeint(self.simulate_SEIR_model, self.init, t_grid,
-                                                   args=(self.beta,)))  # solve full ODE
+    def solve(self):
+        """
+        Solves the SEIR ODE knowing X
+        :return: S, E, I, R values on the same time grid as X in array of shape (T, 4)
+        """
+        t_grid = np.arange(len(self.X))
+        solution = np.array(odeint(self.simulate_SEIR_model, self.init, t_grid, hmin=1E-7,
+                                   args=(self.beta,)))  # solve full ODE
+        return solution
+
+    def incidence(self, solution):
+        """
+        Gives last incidence of an array describing SEIR evolution
+        :param solution: SEIR evolution (array of shape (T, 4))
+        :return: incidence as scalar value
+        """
         return solution[-1, 1]
 
-    def prevalence(self, solution):
-        """Retourne la prévalence au dernier temps t en fonction de la solution à l'ODE
-        calculée juste au dessus
-        """
-        return None
-
     def simulate_SEIR_model(self, y, t, beta):
+        """
+        Private function to describe SEIR model
+        """
+        # Initial conditions
         sigma, gamma = self.coefs[0], self.coefs[1]
         S, E, I, R = y
         N = S + E + I + R
@@ -49,7 +63,7 @@ class SEIR_ODE:
         return ([dS_dt, dE_dt, dI_dt, dR_dt])
 
 
-class SEIR_hard(ssm.StateSpaceModel):
+class SEIR(ssm.StateSpaceModel):
     default_params = {'sigma': 1, 'tau': 1}
 
     def PX0(self):  # Distribution of X_0
@@ -58,19 +72,19 @@ class SEIR_hard(ssm.StateSpaceModel):
     def PX(self, t, xp):  # Distribution of X_t given X_{t-1} = xp (p=past)
         return dists.Normal(loc=xp, scale=self.sigma)
 
-    def prevalence(self, t, N, trajectory):
-        prev_vect = np.ones((N,))
+    def incidence(self, N, trajectory):
+        inc_vect = np.ones((N,))  # initialize vector of one of correct shape
         if trajectory == []:
-            prev_vect *= SEIR_ODE(None).init[1]
+            inc_vect *= SEIR_ODE(None).init[1]  # return initial incidence for all particles
         else:
             for particle_index in range(N):
                 ODE = SEIR_ODE([particles[particle_index] for particles in trajectory])
-                solution = ODE.prevalence_solve()
-                prev_vect[particle_index] = solution
-        return prev_vect
+                solution = ODE.incidence(ODE.solve())  # save incidence for particle
+                inc_vect[particle_index] = solution  # fill in inc_vect with incidence value
+        return inc_vect
 
-    def PY(self, t, N, trajectory):  # Distribution of Y_t given X_t=x, and X_{t-1}=xp
-        return dists.Normal(loc=self.prevalence(t, N, trajectory), scale=self.tau)
+    def PY(self, N, trajectory):  # Distribution of Y_t given full history of X
+        return dists.Normal(loc=self.incidence(N, trajectory), scale=self.tau)
 
 
 class my_Bootstrap(ssm.Bootstrap):
@@ -92,35 +106,7 @@ class my_Bootstrap(ssm.Bootstrap):
         """
 
     def __init__(self, ssm=None, data=None):
-        self.ssm = ssm
-        self.data = data
-        self.du = self.ssm.PX0().dim
-
-    @property
-    def T(self):
-        return 0 if self.data is None else len(self.data)
-
-    def M0(self, N):
-        return self.ssm.PX0().rvs(size=N)
-
-    def M(self, t, xp):
-        return self.ssm.PX(t, xp).rvs(size=xp.shape[0])
+        super().__init__(ssm, data)
 
     def logG(self, t, N, x_history):
-        return self.ssm.PY(t, N, x_history).logpdf(self.data[t])
-
-    def Gamma0(self, u):
-        return self.ssm.PX0().ppf(u)
-
-    def Gamma(self, t, xp, u):
-        return self.ssm.PX(t, xp).ppf(u)
-
-    def logpt(self, t, xp, x):
-        """PDF of X_t|X_{t-1}=xp"""
-        return self.ssm.PX(t, xp).logpdf(x)
-
-    def upper_bound_trans(self, t):
-        return self.ssm.upper_bound_log_pt(t)
-
-    def add_func(self, t, xp, x):
-        return self.ssm.add_func(t, xp, x)
+        return self.ssm.PY(N, x_history).logpdf(self.data[t])
