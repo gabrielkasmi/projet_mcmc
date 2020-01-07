@@ -14,7 +14,7 @@ repose sur le package ```particles``` de N. Chopin disponible sur github
 
 __Fichiers principaux__
 - ```donnees_simulees.ipynb``` permet de simuler des données manuellement (les données 
-sont enregistées dans le fichier 'data_with_beta.csv' qui est écrasé à chaque instruction).
+sont enregistées dans le fichier 'data_with_beta.csv' qui est écrasé à chaque exécution).
 - ```data_with_beta.csv``` contient un tableau à trois colonnes : date, incidence et 
 log beta associé.
 - ```main.py``` permet d'exécuter l'algorithme de pMCMC pour le modèle SEIR et d'afficher
