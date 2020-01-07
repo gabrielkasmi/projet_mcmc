@@ -29,6 +29,8 @@ documentation dans le code.
 
 Pour simuler les données, exécuter le notebook ```donnees_simulees.ipynb```. 
 
+Le fichier ```utilities.py``` contient les fonctions nécessaires à la génération d'observations bruitées et à l'affichage des graphiques. Il et appelé au début du notebook ```donnees_simulees.ipynb```.
+
 ### Exécution de l'algorithme pMCMC
 
 Il suffit d'exécuter le script ```main.py```.
