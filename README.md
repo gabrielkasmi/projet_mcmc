@@ -10,21 +10,20 @@ repose sur le package ```particles``` de N. Chopin disponible sur github
 
 ### Fichiers
 
+__Fichiers principaux__
+- ```donnees_simulees.ipynb``` permet de simuler des données manuellement (les données 
+sont enregistées dans le fichier 'data_with_beta.csv' qui est écrasé à chaque instruction).
+- ```data_with_beta.csv``` contient un tableau à trois colonnes : date, incidence et 
+log beta associé.
+- ```main.py``` permet d'exécuter l'algorithme de pMCMC pour le modèle SEIR et d'afficher
+les résultats.
 
-# Readme 
+Les autres fichiers sont des ressources utiles ou des classes utilisées par les fichiers 
+principaux. Pour plus d'informations sur ces dernières, se référer directement à la 
+documentation dans le code.
 
-Ce dossier contient les fichiers nécessaires à la réplications des résultats du projet du cours de MCMC-SMC.
-
-
-### Fichiers
-- Le fichier 'raw_data.csv' correspond aux données originales de l'article. 
-- Le fichier 'data_with_beta.csv' contient des données simulées et une trajectoire de beta
-- Le fichier 'donnees_simulees.ipnyb' permet de simuler des données manuellement (les données sont enregistées
-dans le fichier 'data_with_beta.csv' qui est écrasé à chaque instruction).
-
-
-### Instructions
+### Génération des données
 
 Pour simuler les données, exécuter le notebook donnees_simulees. 
 
-Pour répliquer les résultats du sampler, 
+### Exécution de l'algorithme pMCMC

@@ -16,8 +16,13 @@ from my_mcmc import my_PMMH
 from my_SMC import my_SMC
 from my_state_space_models import *
 
+N_ITER = 10
+N_PART = 50
+
 
 LABELS = ['S', 'E', 'I', 'R']
+
+
 def flatten(X):
     """
     Process list of list X to pd.DataFrame to easily visualize results
@@ -79,8 +84,8 @@ if __name__ == '__main__':
                   'tau': dists.Gamma(1, 1)}  # prior distributions of parameters sigma and tau
     prior = dists.StructDist(prior_dict)  # priors of parameters sigma and tau
 
-    my_alg = my_PMMH(ssm_cls=SEIR, smc_cls=my_SMC, fk_cls=my_Bootstrap, niter=10, data=y, Nx=50,
-                     prior=prior, verbose=10)  # instantiate PMMH algorithm
+    my_alg = my_PMMH(ssm_cls=SEIR, smc_cls=my_SMC, fk_cls=my_Bootstrap, niter=N_ITER, data=y, Nx=N_PART,
+                     prior=prior, verbose=N_ITER)  # instantiate PMMH algorithm
 
     my_alg.run()  # run all iterations
 
